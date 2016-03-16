@@ -45,7 +45,7 @@ abstract class AnimationTextDrawable extends TextDrawable {
      * @param text the text we want to animate into
      * @param rtlLanguage Necessary for inverting the String for the animation (may be Fleksy specific)
      * @param parent View that holds the drawable
-     * @return
+     * @return Animator object that will perform the animation
      */
     public Animator animateText(CharSequence text, boolean rtlLanguage, View parent) {
         setRTL(rtlLanguage);
