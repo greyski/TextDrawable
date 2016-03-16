@@ -8,6 +8,7 @@ import java.util.Set;
 /**
  * Stolen & Edited by Fleksy on 2/24/16.
  * Editor Greyski.
+ * Author hanks on 15-12-14.
  */
 class CharacterUtils {
 

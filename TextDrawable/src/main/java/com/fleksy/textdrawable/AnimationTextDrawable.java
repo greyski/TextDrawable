@@ -15,6 +15,7 @@ import java.util.List;
 /**
  * Stolen & Edited by Fleksy on 2/24/16.
  * Editor Greyski.
+ * Author hanks on 15-12-14.
  */
 abstract class AnimationTextDrawable extends TextDrawable {
 
@@ -38,6 +39,14 @@ abstract class AnimationTextDrawable extends TextDrawable {
         super();
     }
 
+    /**
+     * Transition current text into new text passed in.
+     *
+     * @param text the text we want to animate into
+     * @param rtlLanguage Necessary for inverting the String for the animation (may be Fleksy specific)
+     * @param parent View that holds the drawable
+     * @return
+     */
     public Animator animateText(CharSequence text, boolean rtlLanguage, View parent) {
         setRTL(rtlLanguage);
         oldText = getText();
