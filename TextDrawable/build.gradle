@@ -12,7 +12,7 @@ ext {
     siteUrl = 'https://github.com/greyski/TextDrawable'
     gitUrl = 'https://github.com/greyski/TextDrawable.git'
 
-    libraryVersion = '0.1'
+    libraryVersion = '0.2'
 
     developerId = 'greyski'
     developerName = 'Grey Skold'

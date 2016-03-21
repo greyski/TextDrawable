@@ -13,22 +13,31 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Stolen & Edited by Fleksy on 2/24/16.
+ * Edited by Fleksy on 2/24/16.
  * Editor Greyski.
  * Author hanks on 15-12-14.
  */
 abstract class AnimationTextDrawable extends TextDrawable {
 
+    /**
+     * Old paint to keep track of previous paint state of text
+     */
     private TextPaint oldPaint;
 
     /**
-     * the gap between characters
+     * the gap between characters...come on, it can't be more than 100
      */
     protected float[] gaps = new float[100];
     protected float[] oldGaps = new float[100];
 
+    /**
+     * Ye olde text that will be animated into new text
+     */
     protected CharSequence oldText;
 
+    /**
+     * Contains list of character elements that are different between old and new text
+     */
     protected List<CharacterUtils.CharacterDiffResult> differentList = new ArrayList<>();
 
     protected float oldStartX = 0; // Old start X of string value
@@ -57,16 +66,50 @@ abstract class AnimationTextDrawable extends TextDrawable {
         return animate(text, parent);
     }
 
+    /**
+     * Resets the text and cancels the animation
+     *
+     * @param text to reset to
+     * @param parent View parent to invalidate
+     */
     public void reset(CharSequence text, View parent) {
         animatePrepare(text);
         parent.invalidate();
     }
 
+    /**
+     * Provides the old Paint of the animated text
+     *
+     * @return the old TextPaint
+     */
     protected final TextPaint getOldPaint() {
         if (oldPaint == null) {
             oldPaint = new TextPaint(TextPaint.ANTI_ALIAS_FLAG);
         }
         return oldPaint;
+    }
+
+    /**
+     * Both prepares and essentially clears the animation data and sets up the text to be animated
+     * between old and new.
+     */
+    private void prepareAnimate() {
+
+        for (int i = 0; i < getText().length(); i++) {
+            gaps[i] = getPaint().measureText(getText().charAt(i) + "");
+        }
+
+        for (int i = 0; i < oldText.length(); i++) {
+            oldGaps[i] = oldPaint.measureText(oldText.charAt(i) + "");
+        }
+
+        final Rect bounds = copyBounds();
+        oldStartX = bounds.left + (bounds.width() - oldPaint.measureText(oldText.toString())) / 2f;
+        startX = bounds.left + (bounds.width() - getPaint().measureText(getText())) / 2f;
+        startY = getRawBaseline();
+
+        differentList.clear();
+        differentList.addAll(CharacterUtils.diff(oldText, getText()));
     }
 
     @Override
@@ -81,8 +124,8 @@ abstract class AnimationTextDrawable extends TextDrawable {
     }
 
     @Override
-    protected int animateAlphaRatio(float ratio, boolean fullAlpha) {
-        getOldPaint().setAlpha(super.animateAlphaRatio(ratio, fullAlpha));
+    protected int animateAlphaF(float ratio, boolean fullAlpha) {
+        getOldPaint().setAlpha(super.animateAlphaF(ratio, fullAlpha));
         return getOldPaint().getAlpha();
     }
 
@@ -99,15 +142,16 @@ abstract class AnimationTextDrawable extends TextDrawable {
     }
 
     @Override
-    protected void animateColor(int color) {
+    protected int animateColor(int color) {
         super.animateColor(color);
         getOldPaint().setColor(color);
+        return color;
     }
 
     @Override
-    public void setFilled(boolean filled) {
-        super.setFilled(filled);
-        getOldPaint().setStyle(filled ? Paint.Style.FILL : Paint.Style.STROKE);
+    public void setStyle(Paint.Style style) {
+        super.setStyle(style);
+        getOldPaint().setStyle(style);
     }
 
     @Override
@@ -120,25 +164,6 @@ abstract class AnimationTextDrawable extends TextDrawable {
     public void setTypeFace(Typeface font) {
         super.setTypeFace(font);
         getOldPaint().setTypeface(font);
-    }
-
-    private void prepareAnimate() {
-
-        for (int i = 0; i < getText().length(); i++) {
-            gaps[i] = paint.measureText(getText().charAt(i) + "");
-        }
-
-        for (int i = 0; i < oldText.length(); i++) {
-            oldGaps[i] = oldPaint.measureText(oldText.charAt(i) + "");
-        }
-
-        final Rect bounds = copyBounds();
-        oldStartX = bounds.left + (bounds.width() - oldPaint.measureText(oldText.toString())) / 2f;
-        startX = bounds.left + (bounds.width() - paint.measureText(getText())) / 2f;
-        startY = getRawBaseline();
-
-        differentList.clear();
-        differentList.addAll(CharacterUtils.diff(oldText, getText()));
     }
 
     /**

@@ -7,8 +7,9 @@ import android.view.View;
 import android.view.animation.AccelerateDecelerateInterpolator;
 
 /**
- * Stolen & Edited by Fleksy on 2/24/16.
- * Editor Greyski.
+ * Edited by Fleksy on 2/24/16.
+ * Editor Greyski
+ * Author hanks on 15-12-14
  */
 public final class ScaleTextDrawable extends AnimationTextDrawable {
 
@@ -90,11 +91,11 @@ public final class ScaleTextDrawable extends AnimationTextDrawable {
                     if (size > getTextSize()) size = getTextSize();
                     if (size < 0) size = 0;
 
-                    paint.setAlpha(alpha);
-                    paint.setTextSize(size);
+                    getPaint().setAlpha(alpha);
+                    getPaint().setTextSize(size);
 
-                    float width = paint.measureText(getText().charAt(i) + "");
-                    canvas.drawText(getText().charAt(i) + "", 0, 1, offset + (gaps[i] - width) / 2, startY, paint);
+                    float width = getPaint().measureText(getText().charAt(i) + "");
+                    canvas.drawText(getText().charAt(i) + "", 0, 1, offset + (gaps[i] - width) / 2, startY, getPaint());
                 }
 
                 offset += gaps[i];
