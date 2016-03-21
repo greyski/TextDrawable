@@ -44,7 +44,7 @@ public class TextDrawable extends BaseDrawable {
     }
 
     public TextDrawable(String text, Typeface typeface, float size, int color, int trimColor) {
-        super(color, true);
+        super(color, Paint.Style.FILL);
         this.text = text == null ? "" : text;
         setTypeFace(typeface);
         if (trimColor != 0) {
@@ -55,7 +55,7 @@ public class TextDrawable extends BaseDrawable {
     }
 
     private void createLayout(Rect bounds) {
-        textLayout = new StaticLayout(text, paint,
+        textLayout = new StaticLayout(text, getPaint(),
                 Math.max(bounds.width(), 0),
                 align, 1.0f, 0.0f, false);
     }
@@ -64,7 +64,7 @@ public class TextDrawable extends BaseDrawable {
     protected void createPath(Rect bounds) {
         centerX = bounds.exactCenterX();
         centerY = bounds.exactCenterY();
-        switch (paint.getTextAlign()) {
+        switch (getPaint().getTextAlign()) {
             case RIGHT:
                 translateX(bounds.width() / 2);
                 break;
@@ -80,7 +80,7 @@ public class TextDrawable extends BaseDrawable {
 
     @Override
     public void draw(Canvas canvas) {
-        if (shown() && textLayout != null) {
+        if (isShown() && textLayout != null) {
             canvas.save();
             canvas.translate(centerX + moveX, getBaseline());
             textLayout.draw(canvas);
@@ -118,11 +118,11 @@ public class TextDrawable extends BaseDrawable {
 
     public void setTextSize(float size) {
         sizeText = size;
-        paint.setTextSize(size);
+        getPaint().setTextSize(size);
     }
 
     public void setTypeFace(Typeface font) {
-        paint.setTypeface(font);
+        getPaint().setTypeface(font);
     }
 
     public float getTextSize() {
@@ -130,7 +130,7 @@ public class TextDrawable extends BaseDrawable {
     }
 
     public Typeface getTypeFace() {
-        return paint.getTypeface();
+        return getPaint().getTypeface();
     }
 
     public void translateX(float x) {
@@ -138,7 +138,7 @@ public class TextDrawable extends BaseDrawable {
     }
 
     public float getBaseline() {
-        return centerY + getYPositioning(paint, scaleText, sizeText) + moveY;
+        return centerY + getYPositioning(getPaint(), scaleText, sizeText) + moveY;
     }
 
     public float getRawBaseline() {
@@ -154,7 +154,7 @@ public class TextDrawable extends BaseDrawable {
     }
 
     public Rect getDefaultBounds() {
-        return defaultBounds(paint, text.toString(),
+        return defaultBounds(getPaint(), text.toString(),
                 scaleText, sizeText, includeFontSpacing);
     }
 
@@ -174,17 +174,17 @@ public class TextDrawable extends BaseDrawable {
 
     public int getTextWidth() {
         final Rect bounds = new Rect();
-        paint.getTextBounds(text.toString(), 0,
+        getPaint().getTextBounds(text.toString(), 0,
                 text.toString().length(), bounds);
         return bounds.width();
     }
 
     public boolean isBold() {
-        return paint.isFakeBoldText();
+        return getPaint().isFakeBoldText();
     }
 
     public void setBold(boolean bold) {
-        paint.setFakeBoldText(bold);
+        getPaint().setFakeBoldText(bold);
     }
 
     public float getTextScale() {
@@ -196,7 +196,7 @@ public class TextDrawable extends BaseDrawable {
     }
 
     public void reset() {
-        display(true);
+        setVisibility(true);
         setColor(0);
     }
 
