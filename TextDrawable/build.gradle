@@ -7,6 +7,7 @@ ext {
     publishedGroupId = 'com.fleksy.textdrawable'
     libraryName = 'TextDrawable'
     artifact = 'TextDrawable'
+
     libraryDescription = 'An Android Drawable for displaying text'
 
     siteUrl = 'https://github.com/greyski/TextDrawable'
