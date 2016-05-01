@@ -190,11 +190,11 @@ abstract class BaseDrawable extends Drawable {
      * Updates the outline of the paint element (ya know, the outline that gives text and drawables
      * a sort of shadow below them. Seriously, check it out if you need shadows!). Feel free to
      * override as I know these magic numbers might not be what you're looking for. This will cancel
-     * any animations currently running (animation support for setOutline() is not currently provided)
+     * any animations currently running (animation support for setShadow() is not currently provided)
      *
      * @param color the color that will be applied to the outline
      */
-    public void setOutline(int color) {
+    public void setShadow(int color) {
         onCancelAnimations();
         paint.setShadowLayer(10, 0, 0, color); // Looks really freakin' sweet...or on Fleksy it does
     }

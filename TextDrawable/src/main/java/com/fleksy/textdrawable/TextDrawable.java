@@ -14,21 +14,20 @@ import android.text.TextPaint;
  */
 public class TextDrawable extends BaseDrawable {
 
-    private CharSequence text = "";
+    private CharSequence currentText = "";
 
-    private boolean isRTL = false;
     private boolean includeFontSpacing = false;
 
-    private float sizeText = 0;
-    private float scaleText = 1;
-    private float moveX = 0, moveY = 0;
+    private float textSize = 0;
+    private float textScale = 1;
     private float centerX = 0, centerY = 0;
+    private float translateX = 0, translateY = 0;
 
-    private StaticLayout textLayout;
-    private Alignment align = Alignment.ALIGN_CENTER;
+    private StaticLayout staticTextLayout;
+    private Alignment textAlignment = Alignment.ALIGN_CENTER;
 
     public TextDrawable() {
-        this("");
+        this(null);
     }
 
     public TextDrawable(String text) {
@@ -43,21 +42,37 @@ public class TextDrawable extends BaseDrawable {
         this(text, typeface, size, color, 0);
     }
 
-    public TextDrawable(String text, Typeface typeface, float size, int color, int trimColor) {
+    /**
+     * TextDrawable class running with all of the functionality from BaseDrawable.
+     * Capable of rendering emojis and unicode characters, but leaves the sizing, alignment, and
+     * general layout to the developer, yet provides the light-weight
+     *
+     * @param text Text to display in the layout
+     * @param typeface Typeface to render for the text displayed
+     * @param size Size of the text to display
+     * @param color Color of the text in the layout
+     * @param shadowColor Provides a shadow around the text
+     */
+    public TextDrawable(String text, Typeface typeface, float size, int color, int shadowColor) {
         super(color, Paint.Style.FILL);
-        this.text = text == null ? "" : text;
+        this.currentText = text == null ? "" : text;
         setTypeFace(typeface);
-        if (trimColor != 0) {
-            setOutline(trimColor);
+        if (shadowColor != 0) {
+            setShadow(shadowColor);
         }
         setTextSize(size);
-        defaultBounds();
+        setDefaultBounds();
     }
 
+    /**
+     * Constructs a static layout that handles all text rendering at the lowest level
+     *
+     * @param bounds Primarily used for width sizing as height is determined by text size
+     */
     private void createLayout(Rect bounds) {
-        textLayout = new StaticLayout(text, getPaint(),
+        staticTextLayout = new StaticLayout(currentText, getPaint(),
                 Math.max(bounds.width(), 0),
-                align, 1.0f, 0.0f, false);
+                textAlignment, 1.0f, 0.0f, false);
     }
 
     @Override
@@ -66,13 +81,13 @@ public class TextDrawable extends BaseDrawable {
         centerY = bounds.exactCenterY();
         switch (getPaint().getTextAlign()) {
             case RIGHT:
-                translateX(bounds.width() / 2);
+                setTranslationX(bounds.width() / 2);
                 break;
             case LEFT:
-                translateX(-bounds.width() / 2);
+                setTranslationX(-bounds.width() / 2);
                 break;
             default:
-                translateX(0);
+                setTranslationX(0);
                 break;
         }
         createLayout(bounds);
@@ -80,102 +95,173 @@ public class TextDrawable extends BaseDrawable {
 
     @Override
     public void draw(Canvas canvas) {
-        if (isShown() && textLayout != null) {
+        if (isShown() && staticTextLayout != null) {
             canvas.save();
-            canvas.translate(centerX + moveX, getBaseline());
-            textLayout.draw(canvas);
+            canvas.translate(centerX + translateX, getBaseline());
+            staticTextLayout.draw(canvas);
             canvas.restore();
         }
     }
 
-    public void setRTL(boolean rtl) {
-        this.isRTL = rtl;
-    }
-
-    public boolean isRTL() {
-        return isRTL;
-    }
-
+    /**
+     * @return The current text
+     */
     public String getText() {
-        return text.toString();
+        return currentText.toString();
     }
 
+    /**
+     * Sets the CharSequence of text to be displayed
+     *
+     * @param text update to the current text
+     * @return True of the text was updated, False if not
+     */
     public boolean setText(CharSequence text) {
         return setText((String) text);
     }
 
+    /**
+     * Sets the String of text to be displayed. Handles null.
+     *
+     * @param text update to the current text
+     * @return True of the text was updated, False if not
+     */
     public boolean setText(String text) {
         if (text == null) {
             text = "";
         }
-        final boolean changedText = !this.text.equals(text);
-        this.text = text;
-        if (changedText || textLayout == null) {
+        final boolean changedText = !this.currentText.equals(text);
+        this.currentText = text;
+        if (changedText || staticTextLayout == null) {
             createLayout(getCurrentBounds());
         }
         return changedText;
     }
 
+    /**
+     * @return The current text size
+     */
+    public float getTextSize() {
+        return textSize;
+    }
+
+    /**
+     * Set the paint's text size. This value must be > 0
+     *
+     * @param size set the paint's text size.
+     */
     public void setTextSize(float size) {
-        sizeText = size;
+        textSize = size;
         getPaint().setTextSize(size);
     }
 
+    /**
+     * Set or clear the typeface object.
+     * Pass null to clear any previous typeface.
+     * As a convenience, the parameter passed is also returned.
+     *
+     * @param font May be null. The typeface to be installed in the paint. Also named it font
+     *             to bother nitpickers
+     */
     public void setTypeFace(Typeface font) {
         getPaint().setTypeface(font);
     }
 
-    public float getTextSize() {
-        return sizeText;
-    }
-
+    /**
+     * Get the paint's typeface object.
+     * The typeface object identifies which font to use when drawing or
+     * measuring text.
+     *
+     * @return the paint's typeface (or null)
+     */
     public Typeface getTypeFace() {
         return getPaint().getTypeface();
     }
 
-    public void translateX(float x) {
-        moveX = x;
+    /**
+     * Translates the x-coordinate of the text.
+     *
+     * @param x to translate the text horizontally
+     */
+    public void setTranslationX(float x) {
+        translateX = x;
     }
 
+    /**
+     * Translate the y-coordinate of the text.
+     *
+     * @param y to translate the text vertically
+     */
+    public void setTranslationY(float y) {
+        translateY = y;
+    }
+
+    /**
+     * @return Provides the artificial location of where the glyphs align along the bottom.
+     */
     public float getBaseline() {
-        return centerY + getYPositioning(getPaint(), scaleText, sizeText) + moveY;
+        return centerY + getYPositioning(getPaint(), textScale, textSize) + translateY;
     }
 
-    public float getRawBaseline() {
-        return textLayout.getLineBaseline(0) + getBaseline();
+    /**
+     * @return Return the vertical position of the baseline of the lowest line.
+     */
+    public float getBottomBaseLine() {
+        return staticTextLayout.getLineBaseline(staticTextLayout.getLineCount() - 1) + getBaseline();
     }
 
-    public void translateY(float y) {
-        moveY = y;
-    }
-
+    /**
+     * Set the text alignement.
+     *
+     * @param align Options are CENTER, RIGHT, LEFT. Default is CENTER
+     */
     public void setTextAlign(Alignment align) {
-        this.align = align;
+        this.textAlignment = align;
     }
 
+    /**
+     * @return The minimal possible bounds for the text to be laid out.
+     */
     public Rect getDefaultBounds() {
-        return defaultBounds(getPaint(), text.toString(),
-                scaleText, sizeText, includeFontSpacing);
+        return defaultBounds(getPaint(), currentText.toString(),
+                textScale, textSize, includeFontSpacing);
     }
 
-    public Rect defaultBounds() {
+    /**
+     * Automatically sets the layout to the minimum bounds in order for the text to be displayed.
+     * This assumes that the coordinates 0,0 (x,y) are viable.
+     *
+     * @return The default bounds the text was set to.
+     */
+    public Rect setDefaultBounds() {
         final Rect bounds = getDefaultBounds();
         setBounds(bounds);
         return bounds;
     }
 
+    /**
+     * Some typefaces have added spacing between letters both horizontally and vertically.
+     *
+     * @param includeFontSpacing True if you want the spacing to be handled, False to ignore the spacing
+     */
     public void setIncludeFontSpacing(boolean includeFontSpacing) {
         this.includeFontSpacing = includeFontSpacing;
     }
 
+    /**
+     * @return True if the current text has multiple lines of text (new line commands), False otherwise
+     */
     public boolean isMultiline() {
-        return text.toString().split("\r\n|\r|\n").length > 1;
+        return currentText.toString().split("\r\n|\r|\n").length > 1;
     }
 
+    /**
+     * @return The width of the text calculated by it's Paint element.
+     */
     public int getTextWidth() {
         final Rect bounds = new Rect();
-        getPaint().getTextBounds(text.toString(), 0,
-                text.toString().length(), bounds);
+        getPaint().getTextBounds(currentText.toString(), 0,
+                currentText.toString().length(), bounds);
         return bounds.width();
     }
 
@@ -187,25 +273,48 @@ public class TextDrawable extends BaseDrawable {
         getPaint().setFakeBoldText(bold);
     }
 
+    /**
+     * @return The current scale of the text, which is 1 by default
+     */
     public float getTextScale() {
-        return scaleText;
+        return textScale;
     }
 
+    /**
+     * @param scale will scale the text
+     */
     public void setTextScale(float scale) {
-        scaleText = scale;
+        textScale = scale;
     }
 
-    public void reset() {
-        setVisibility(true);
-        setColor(0);
-    }
-
+    /**
+     * This is some beautiful/ugly method that provides the perfect y-coordinate that's positioned
+     * at the center of the text layout bounds. Oh the time I spent trying to figure this out...
+     * I can still feel the tears on my cheek
+     *
+     * @param paint Primary component with rendering the text
+     * @param textScale Scale desired for the text
+     * @param textSize Size desired for the text
+     * @return If you could imagine a line that evenly goes through the text horizontally, that's the
+     * coordinate this returns
+     */
     private static int getYPositioning(TextPaint paint, float textScale, float textSize) {
-        paint.setTextSize(textSize * textScale);
-        final int in = Math.round(((paint.ascent() - paint.descent()) / (textScale * 2.0f)));
+        paint.setTextSize(textSize * textScale); // Updates the paint the appropriate text size vs scale
+        final int in = Math.round( // Better to round up
+                (paint.ascent() - paint.descent()) // Returns the difference between the ascent and descent
+                        / (textScale * 2.0f) // This has to do with us finding the y-coordinate halfway between the top and bottom
+        );
         return (int) (in / textScale);
     }
 
+    /**
+     * @param paint Primary object for housing all UI rendering utilities/variables/what-not
+     * @param text String of text to be displayed
+     * @param scaleText Scale for the text
+     * @param sizeText Size for the text
+     * @param includeFontSpacing True/False as to whether text spacing should be included in the caluclations
+     * @return The minimal Rect bounds needed to display the text.
+     */
     private static Rect defaultBounds(TextPaint paint, String text, float scaleText, float sizeText, boolean includeFontSpacing) {
         if (text == null) {
             text = "";
@@ -226,6 +335,11 @@ public class TextDrawable extends BaseDrawable {
                 Math.abs(getYPositioning(paint, scaleText, sizeText)));
     }
 
+    /**
+     * @param text String of text to be sized
+     * @param sizeText Size to render the text by
+     * @return The default Rect bounds that will accommodate the text at the desired size
+     */
     public static Rect defaultBounds(String text, float sizeText) {
         final TextPaint paint = new TextPaint(Paint.ANTI_ALIAS_FLAG);
         paint.setTextSize(sizeText);
@@ -233,6 +347,16 @@ public class TextDrawable extends BaseDrawable {
     }
 
 
+    /**
+     * Very expensive method for providing the optimal text size in order to fit the text
+     * within the given parent width/height.
+     *
+     * @param text String of text to be sized
+     * @param parentW Width of the parent
+     * @param parentH Height of the parent
+     * @param targetTextSize Desired text size to obtain
+     * @return The optimal text size which can be less than the targetTextSize or 0 if it's not possible
+     */
     public static float autoScaleText(final String text, final float parentW, final float parentH, float targetTextSize) {
 
         final float wantedSize = targetTextSize;
@@ -257,7 +381,13 @@ public class TextDrawable extends BaseDrawable {
         return targetTextSize;
     }
 
-    private static boolean fitsParent(final String text, final TextPaint paint, final float parentW, final float parentH, float textSize) {
+    /**
+     * Very expensive.
+     *
+     * @return True if the text fits within the given parent width/height with the given textSize
+     */
+    private static boolean fitsParent(final String text, final TextPaint paint,
+                                      final float parentW, final float parentH, float textSize) {
         paint.setTextSize(textSize);
         Rect bounds = new Rect();
         paint.getTextBounds(text, 0, text.length(), bounds);

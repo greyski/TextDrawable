@@ -19,6 +19,8 @@ import java.util.List;
  */
 abstract class AnimationTextDrawable extends TextDrawable {
 
+    private boolean rtlLanguage;
+
     /**
      * Old paint to keep track of previous paint state of text
      */
@@ -57,13 +59,20 @@ abstract class AnimationTextDrawable extends TextDrawable {
      * @return Animator object that will perform the animation
      */
     public Animator animateText(CharSequence text, boolean rtlLanguage, View parent) {
-        setRTL(rtlLanguage);
-        oldText = getText();
+        this.rtlLanguage = rtlLanguage;
+        this.oldText = getText();
         text = CharacterUtils.getAlignedText(text.toString(), rtlLanguage);
         setText(text);
         prepareAnimate();
         animatePrepare(text);
         return animate(text, parent);
+    }
+
+    /**
+     * @return True if the language is RTL, False otherwise
+     */
+    public boolean isRtlLanguage() {
+        return rtlLanguage;
     }
 
     /**
@@ -106,7 +115,7 @@ abstract class AnimationTextDrawable extends TextDrawable {
         final Rect bounds = copyBounds();
         oldStartX = bounds.left + (bounds.width() - oldPaint.measureText(oldText.toString())) / 2f;
         startX = bounds.left + (bounds.width() - getPaint().measureText(getText())) / 2f;
-        startY = getRawBaseline();
+        startY = getBottomBaseLine();
 
         differentList.clear();
         differentList.addAll(CharacterUtils.diff(oldText, getText()));
@@ -136,8 +145,8 @@ abstract class AnimationTextDrawable extends TextDrawable {
     }
 
     @Override
-    public void setOutline(int color) {
-        super.setOutline(color);
+    public void setShadow(int color) {
+        super.setShadow(color);
         getOldPaint().setShadowLayer(10, 0, 0, color);
     }
 
